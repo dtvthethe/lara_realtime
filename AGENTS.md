@@ -5,7 +5,9 @@
 - This project is for learning realtime communication and messaging workflows.
 - The primary feature is sending messages directly between users.
 - Always respond in Vietnamese.
-- For frontend code, use Tailwind CSS with as few utility classes as practical and keep the UI simple.
+- For frontend code, use Tailwind CSS with as few utility classes as practical and keep the UI genuinely simple.
+- Prioritize clarity of the realtime communication flow over visual polish, animations, decorative elements, and unnecessary components.
+- Keep React/JSX and Tailwind code short and easy to follow; do not add UI abstractions or styling complexity unless they directly support the feature being demonstrated.
 
 ## Stack and Entry Points
 
