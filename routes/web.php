@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\ChatController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
@@ -19,6 +19,6 @@ Route::get('/', function () {
         : redirect()->route('login');
 });
 
-Route::get('/chat', function () {
-    return Inertia::render('Chat/Index');
-})->middleware('auth')->name('chat');
+Route::get('/chat', ChatController::class)
+    ->middleware('auth')
+    ->name('chat');
