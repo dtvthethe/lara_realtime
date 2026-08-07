@@ -15,10 +15,10 @@ Route::post('/logout', [LoginController::class, 'destroy'])
 
 Route::get('/', function () {
     return auth()->check()
-        ? redirect()->route('dashboard')
+        ? redirect()->route('chat')
         : redirect()->route('login');
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware('auth')->name('dashboard');
+Route::get('/chat', function () {
+    return Inertia::render('Chat/Index');
+})->middleware('auth')->name('chat');
