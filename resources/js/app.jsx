@@ -9,7 +9,7 @@ createInertiaApp({
     resolve: (name) => {
         const page = pages[`./Pages/${name}.jsx`];
 
-        if (name !== 'Auth/Login') {
+        if (!['Auth/Login', 'Error'].includes(name)) {
             page.default.layout = (content) => <Layout>{content}</Layout>;
         }
 
