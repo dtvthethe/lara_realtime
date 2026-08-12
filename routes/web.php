@@ -19,6 +19,10 @@ Route::get('/', function () {
         : redirect()->route('login');
 });
 
-Route::get('/chat', ChatController::class)
+Route::get('/chat', [ChatController::class, 'index'])
     ->middleware('auth')
     ->name('chat');
+
+Route::post('/chat/message', [ChatController::class, 'store'])
+    ->middleware('auth')
+    ->name('chat.message');

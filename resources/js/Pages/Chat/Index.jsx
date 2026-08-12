@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import ChatPanel from './ChatPanel';
 import Conversation from './ConversationPanel';
 
@@ -11,21 +11,33 @@ function getInitials(name) {
     return initials.toLocaleUpperCase('vi-VN');
 }
 
-export default function Index({ users = [] }) {
+export default function Index({ users = [], conversation = null }) {
     const conversationUsers = users.map((user) => ({
         ...user,
         initials: getInitials(user.name),
         color: avatarColors[user.id % avatarColors.length],
         online: false,
     }));
-    const selectedUser = conversationUsers[0];
+    const selectedUser = conversationUsers.find((user) => user.id === conversation?.user_id);
+
+    function selectConversation(conversationId) {
+        router.get('/chat', { conversation_id: conversationId }, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    }
 
     return (
         <>
             <Head title="Tin nhắn" />
-            <div className="flex h-[calc(100vh-69px)] min-h-[600px] flex-col bg-rose-50 text-rose-950 md:flex-row">
-                <Conversation users={conversationUsers} />
-                {selectedUser && <ChatPanel user={selectedUser} />}
+            <div className="flex h-[calc(100vh-80px)] flex-col bg-rose-50 text-rose-950 md:flex-row">
+                <Conversation
+                    users={conversationUsers}
+                    selectedConversationId={conversation?.id}
+                    onSelect={selectConversation}
+                />
+                {selectedUser && <ChatPanel user={selectedUser} messages={conversation.messages} conversation_id={conversation?.id} pagination={conversation?.pagination} />}
             </div>
         </>
     );
