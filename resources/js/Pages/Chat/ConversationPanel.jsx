@@ -1,7 +1,7 @@
 import Avatar from './Avatar';
 import { useState } from 'react';
 
-export default function ConversationPanel({ users }) {
+export default function ConversationPanel({ users, selectedConversationId, onSelect }) {
     const [search, setSearch] = useState('');
     const filteredUsers = users.filter((user) => user.name.toLocaleLowerCase('vi-VN').includes(search.toLocaleLowerCase('vi-VN')));
 
@@ -18,8 +18,17 @@ export default function ConversationPanel({ users }) {
                 />
             </div>
             <div className="overflow-y-auto p-3">
-                {filteredUsers.map((user, index) => (
-                    <div key={user.id} className={`flex w-full items-center gap-3 rounded-xl p-3 text-left ${index === 0 ? 'bg-pink-100' : 'hover:bg-rose-50'}`}>
+                {filteredUsers.map((user) => (
+                    <div
+                        key={user.id}
+                        role="button"
+                        tabIndex="0"
+                        onClick={() => onSelect(user.conversation_id)}
+                        onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') onSelect(user.conversation_id);
+                        }}
+                        className={`flex w-full items-center gap-3 rounded-xl p-3 text-left ${user.conversation_id === selectedConversationId ? 'bg-pink-100' : 'hover:bg-rose-50'}`}
+                    >
                         <Avatar user={user} />
                         <span className="min-w-0 flex-1">
                             <span className="flex items-center justify-between gap-2">
