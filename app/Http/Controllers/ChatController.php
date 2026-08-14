@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageSent;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
@@ -114,6 +115,11 @@ class ChatController extends Controller
             'sender_id' => $request->user()->id,
             'content' => $request->content,
         ]);
+
+        // Broadcast the message to other users in the conversation
+        // toOthers() ensures that the sender does not receive their own message broadcast. detect owner by header `X-Socket-Id` from the request.
+        // broadcast(new MessageSent($message))->toOthers();
+        MessageSent::dispatch($message);
 
         return redirect()->back();
     }

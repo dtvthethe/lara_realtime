@@ -1,11 +1,13 @@
-Frontend:
-- Laravel Echo
-- TanStack Query: tùy chọn
+php artisan install:broadcasting
+npm install laravel-echo pusher-js
 
-Backend:
-- Redis Queue
-- Laravel Horizon
+tạo các biến trong .env
 
-Production:
-- Reverb process
-- Supervisor hoặc systemd
+tạo file resources/js/echo.js
+import vào file app.jsx
+
+
+php artisan serve
+npm run dev
+php artisan reverb:start
+php artisan queue:listen

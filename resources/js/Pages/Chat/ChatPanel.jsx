@@ -1,7 +1,7 @@
 import Message from './Message';
 import MessageHeader from './MessageHeader';
 import MessageInput from './MessageInput';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
 export default function ChatPanel({ user, messages, conversation_id, pagination }) {
@@ -9,6 +9,8 @@ export default function ChatPanel({ user, messages, conversation_id, pagination 
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const loadMoreRef = useRef(null);
     const lastConversationRef = useRef(conversation_id);
+
+    const currentUserId = usePage().props.auth.user.id;
 
     // Reset messages when switching conversation, otherwise merge older messages in
     useEffect(() => {
@@ -21,7 +23,7 @@ export default function ChatPanel({ user, messages, conversation_id, pagination 
         setAllMessages((prev) => {
             const existingIds = new Set(prev.map((m) => m.id));
             const newOnes = messages.filter((m) => !existingIds.has(m.id));
-            return newOnes.length ? [...prev, ...newOnes] : prev;
+            return newOnes.length ? [...prev, ...newOnes].sort((a, b) => b.id - a.id) : prev;
         });
     }, [messages, conversation_id]);
 
@@ -47,6 +49,32 @@ export default function ChatPanel({ user, messages, conversation_id, pagination 
         observer.observe(loadMoreRef.current);
         return () => observer.disconnect();
     }, [isLoadingMore, pagination?.next_cursor, conversation_id]);
+
+    useEffect(() => {
+        if (!conversation_id && !window.Echo) return;
+
+        const channel = window.Echo.private(`conversation.${conversation_id}`);
+    
+        channel.listen('MessageSent', ({ message }) => { // TODO: MessageSent co phai la event khong? co phai la MessageSentEvent khong?
+            if (!message) return;
+
+            setAllMessages((prev) => {
+                if (prev.some((m) => m.id === message.id)) return prev; // Avoid duplicates
+                return [
+                    {
+                        id: message.id,
+                        content: message.content,
+                        sender_id: message.sender_id,
+                        time: message.created_at,
+                        is_mine: message.sender_id === currentUserId,
+                    },
+                    ...prev,
+                ];
+            });
+        });
+
+        return () => window.Echo.leaveChannel(`conversation.${conversation_id}`); // TODO: tai sao lai phai leaveChannel? co phai la unlisten khong?
+    }, [conversation_id, currentUserId]);
 
     return (
         <section className="flex min-h-0 flex-1 flex-col">
