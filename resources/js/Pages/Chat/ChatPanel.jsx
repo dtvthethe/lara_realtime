@@ -23,7 +23,7 @@ export default function ChatPanel({ user, messages, conversation_id, pagination 
         setAllMessages((prev) => {
             const existingIds = new Set(prev.map((m) => m.id));
             const newOnes = messages.filter((m) => !existingIds.has(m.id));
-            return newOnes.length ? [...prev, ...newOnes] : prev;
+            return newOnes.length ? [...prev, ...newOnes].sort((a, b) => b.id - a.id) : prev;
         });
     }, [messages, conversation_id]);
 
