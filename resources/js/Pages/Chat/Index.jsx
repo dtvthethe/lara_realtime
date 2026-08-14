@@ -20,12 +20,16 @@ export default function Index({ users = [], conversation = null }) {
     }));
     const selectedUser = conversationUsers.find((user) => user.id === conversation?.user_id);
 
-    function selectConversation(conversationId) {
-        router.get('/chat', { conversation_id: conversationId }, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-        });
+    function selectConversation(user) {
+        if (user.conversation_id) {
+            router.get('/chat', { conversation_id: user.conversation_id }, {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            });
+        } else {
+            router.post('/chat/start', { user_id: user.id });
+        }
     }
 
     return (
@@ -37,7 +41,13 @@ export default function Index({ users = [], conversation = null }) {
                     selectedConversationId={conversation?.id}
                     onSelect={selectConversation}
                 />
-                {selectedUser && <ChatPanel user={selectedUser} messages={conversation.messages} conversation_id={conversation?.id} pagination={conversation?.pagination} />}
+                {selectedUser ? (
+                    <ChatPanel user={selectedUser} messages={conversation.messages} conversation_id={conversation?.id} pagination={conversation?.pagination} />
+                ) : (
+                    <section className="flex flex-1 items-center justify-center text-sm text-rose-400">
+                        Chọn một cuộc trò chuyện để bắt đầu
+                    </section>
+                )}
             </div>
         </>
     );
