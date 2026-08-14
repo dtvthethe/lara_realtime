@@ -37,7 +37,10 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            //
+
+            'auth' => [
+                'user' => $request->user(), // use at `usePage().props.auth.user.id` in React component
+            ],
         ];
     }
 }
