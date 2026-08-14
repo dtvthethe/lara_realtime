@@ -23,9 +23,9 @@ export default function ConversationPanel({ users, selectedConversationId, onSel
                         key={user.id}
                         role="button"
                         tabIndex="0"
-                        onClick={() => onSelect(user.conversation_id)}
+                        onClick={() => onSelect(user)}
                         onKeyDown={(event) => {
-                            if (event.key === 'Enter' || event.key === ' ') onSelect(user.conversation_id);
+                            if (event.key === 'Enter' || event.key === ' ') onSelect(user);
                         }}
                         className={`flex w-full items-center gap-3 rounded-xl p-3 text-left ${user.conversation_id === selectedConversationId ? 'bg-pink-100' : 'hover:bg-rose-50'}`}
                     >

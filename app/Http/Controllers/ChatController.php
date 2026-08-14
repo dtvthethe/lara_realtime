@@ -123,4 +123,30 @@ class ChatController extends Controller
 
         return redirect()->back();
     }
+
+    public function startConversation(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $currentUser = $request->user();
+        $otherUserId = (int) $validated['user_id'];
+
+        if ($otherUserId === $currentUser->id) {
+            return redirect()->route('chat');
+        }
+
+        $conversation = Conversation::query()
+            ->whereHas('users', fn ($query) => $query->whereKey($currentUser->id))
+            ->whereHas('users', fn ($query) => $query->whereKey($otherUserId))
+            ->first();
+
+        if (! $conversation) {
+            $conversation = Conversation::create();
+            $conversation->users()->attach([$currentUser->id, $otherUserId]);
+        }
+
+        return redirect()->route('chat', ['conversation_id' => $conversation->id]);
+    }
 }

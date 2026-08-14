@@ -26,3 +26,7 @@ Route::get('/chat', [ChatController::class, 'index'])
 Route::post('/chat/message', [ChatController::class, 'store'])
     ->middleware('auth')
     ->name('chat.message');
+
+Route::post('/chat/start', [ChatController::class, 'startConversation'])
+    ->middleware('auth')
+    ->name('chat.start');
