@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
 
-export default function MessageInput({ conversation_id }) {
+export default function MessageInput({ conversation_id, onSent }) {
     const [input, setInput] = useState('');
 
     function handleSubmit(event) {
         event.preventDefault();
-        if (!input.trim()) return;
+        const content = input.trim();
+        if (!content) return;
+
+        onSent(content);
 
         router.post('/chat/message', {
             conversation_id,
-            content: input,
+            content,
         });
 
         setInput('');

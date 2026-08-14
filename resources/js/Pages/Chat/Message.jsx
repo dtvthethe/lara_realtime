@@ -54,7 +54,7 @@ export default function Message({ user, messages = [], isLoadingMore = false, lo
             {reversedMessages.map((message) => (
                 <div key={message.id} className={`flex items-end gap-2 ${message.is_mine ? 'justify-end' : ''}`}>
                     {!message.is_mine && <Avatar user={user} />}
-                    <div className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-6 ${message.is_mine ? 'rounded-br-md bg-gradient-to-r from-pink-500 to-fuchsia-500 text-white shadow-sm shadow-pink-200' : 'rounded-bl-md border border-pink-100 bg-white text-rose-900 shadow-sm'}`}>
+                    <div className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-6 ${message.is_mine ? 'rounded-br-md bg-gradient-to-r from-pink-500 to-fuchsia-500 text-white shadow-sm shadow-pink-200' : 'rounded-bl-md border border-pink-100 bg-white text-rose-900 shadow-sm'} ${message.optimistic ? 'opacity-70' : ''}`}>
                         {message.content}
                     </div>
                     <span className="text-[11px] text-rose-400">{formatTime(message.time)}</span>

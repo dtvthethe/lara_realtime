@@ -12,6 +12,21 @@ export default function ChatPanel({ user, messages, conversation_id, pagination 
 
     const currentUserId = usePage().props.auth.user.id;
 
+    // Show the sender's own message instantly, before the server round trip completes
+    const addOptimistic = (content) => {
+        setAllMessages((prev) => [
+            {
+                id: -Date.now(),
+                content,
+                sender_id: currentUserId,
+                time: new Date().toISOString(),
+                is_mine: true,
+                optimistic: true,
+            },
+            ...prev,
+        ]);
+    };
+
     // Reset messages when switching conversation, otherwise merge older messages in
     useEffect(() => {
         if (lastConversationRef.current !== conversation_id) {
@@ -23,7 +38,15 @@ export default function ChatPanel({ user, messages, conversation_id, pagination 
         setAllMessages((prev) => {
             const existingIds = new Set(prev.map((m) => m.id));
             const newOnes = messages.filter((m) => !existingIds.has(m.id));
-            return newOnes.length ? [...prev, ...newOnes].sort((a, b) => b.id - a.id) : prev;
+            if (!newOnes.length) return prev;
+
+            let merged = [...prev];
+            for (const incoming of newOnes) {
+                merged = merged.filter((m) => !(m.optimistic && m.sender_id === incoming.sender_id && m.content === incoming.content));
+                merged = [...merged, incoming];
+            }
+
+            return merged.sort((a, b) => b.id - a.id);
         });
     }, [messages, conversation_id]);
 
@@ -51,29 +74,35 @@ export default function ChatPanel({ user, messages, conversation_id, pagination 
     }, [isLoadingMore, pagination?.next_cursor, conversation_id]);
 
     useEffect(() => {
-        if (!conversation_id && !window.Echo) return;
+        if (!conversation_id || !window.Echo) return;
 
         const channel = window.Echo.private(`conversation.${conversation_id}`);
-    
+
         channel.listen('MessageSent', ({ message }) => { // TODO: MessageSent co phai la event khong? co phai la MessageSentEvent khong?
-            if (!message) return;
+            if (!message || message.conversation_id !== conversation_id) return;
 
             setAllMessages((prev) => {
-                if (prev.some((m) => m.id === message.id)) return prev; // Avoid duplicates
+                if (prev.some((m) => m.id === message.id)) return prev;
+
+                const incoming = {
+                    id: message.id,
+                    content: message.content,
+                    sender_id: message.sender_id,
+                    time: message.created_at,
+                    is_mine: message.sender_id === currentUserId,
+                };
+
                 return [
-                    {
-                        id: message.id,
-                        content: message.content,
-                        sender_id: message.sender_id,
-                        time: message.created_at,
-                        is_mine: message.sender_id === currentUserId,
-                    },
-                    ...prev,
+                    incoming,
+                    ...prev.filter((m) => !(m.optimistic && m.sender_id === incoming.sender_id && m.content === incoming.content)),
                 ];
             });
         });
 
-        return () => window.Echo.leaveChannel(`conversation.${conversation_id}`); // TODO: tai sao lai phai leaveChannel? co phai la unlisten khong?
+        return () => {
+            channel.stopListening('MessageSent');
+            window.Echo.leaveChannel(`conversation.${conversation_id}`); // TODO: tai sao lai phai leaveChannel? co phai la unlisten khong?
+        };
     }, [conversation_id, currentUserId]);
 
     return (
@@ -86,7 +115,7 @@ export default function ChatPanel({ user, messages, conversation_id, pagination 
                 loaderRef={loadMoreRef}
                 hasMore={Boolean(pagination?.next_cursor)}
             />
-            <MessageInput conversation_id={conversation_id} />
+            <MessageInput conversation_id={conversation_id} onSent={addOptimistic} />
         </section>
     );
 }
